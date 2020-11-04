@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    private IEnumerator coroutine;
+
     public Color color1;
     public Color color2;
     public Color color3;
@@ -14,16 +16,44 @@ public class GameManager : MonoBehaviour
     public Color color8;
     public Color color9;
     public GameObject gm;
+    private Color randomColor;
 
-    // Start is called before the first frame update
-    void Start()
+    IEnumerator GameStart()
     {
-        
+        for (int k = 1; k < 19; k++)
+        {
+            if (k % 2 == 1)
+            {
+                for (float i = 0; i <= 4f; i += 1.12f)
+                {
+                    Vector2 position = new Vector2(-1.36f + i, 2);
+                    Instantiate(gm, position, Quaternion.identity);
+
+                    //var hexColor = gm.GetComponent<SpriteRenderer>();
+                    //hexColor.color = randomColor;
+                    yield return new WaitForSeconds(0.3f);
+                }
+            }
+            else
+            {
+                for (float i = 0; i <= 4f; i += 1.12f)
+                {
+                    Vector2 position = new Vector2(-1.92f + i, 2);
+                    Instantiate(gm, position, Quaternion.identity);
+
+                    //var hexColor = gm.GetComponent<SpriteRenderer>();
+                    //hexColor.color = randomColor;
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+
+        }
+
     }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator Start()
     {
-        
+        // Start function GameStart as a coroutine
+        yield return StartCoroutine("GameStart");
     }
 }
