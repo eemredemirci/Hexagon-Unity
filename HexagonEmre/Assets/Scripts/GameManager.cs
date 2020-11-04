@@ -18,6 +18,11 @@ public class GameManager : MonoBehaviour
     public GameObject gm;
     private Color randomColor;
 
+    void Awake()
+    {
+
+    }
+
     IEnumerator GameStart()
     {
         for (int k = 1; k < 19; k++)
