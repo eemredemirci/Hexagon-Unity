@@ -5,21 +5,16 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     private IEnumerator coroutine;
-
+    bool startDone = false;
     [Header("Column Points")]
 
-    public GameObject col1top;
-    public GameObject col1bot;
-    public GameObject col2top, col2bot;
-    public GameObject col3top, col3bot;
-    public GameObject col4top, col4bot;
-    public GameObject col5top, col5bot;
-    public GameObject col6top, col6bot;
-    public GameObject col7top, col7bot;
-    public GameObject col8top, col8bot;
+    public Transform ColumnTopPoint;
+    public Transform ColumnBotPoint;
+    public int gameWidth = 8;
+    public int gameLenght = 9;
+    private Vector3 direction;
+    string hexagonName = "hexagon";
 
-    //Column Vectors
-    private Vector2 col1,col2,col3,col4,col5,col6,col7,col8,col9;
 
     [Header("Hexagons Colors")]
     public Color color1;
@@ -34,12 +29,11 @@ public class GameManager : MonoBehaviour
 
     [Header("Hexagon Model")]
     public GameObject gm;
-
     private Color randomColor;
-
     List<Color> colorList = new List<Color>();
+    List<GameObject> columnList = new List<GameObject>();
 
-    Vector2 direction;
+
     void Awake()
     {
         //Add the color to list
@@ -48,33 +42,47 @@ public class GameManager : MonoBehaviour
         colorList.Add(color3);
         colorList.Add(color4);
         colorList.Add(color5);
+    }
 
-        //draw the colun vector
-        
+    void FixedUpdate()
+    {
+        if (startDone == true)
+        {
+            //Vector3 fromPosition = ColumnTopPoint.transform.position;
+            ////print(fromPosition);
 
-        //Vector2 dir = (col1bot.transform.position - col1top.transform.position).normalized;
-        //Debug.DrawLine(col1, col1 + dir*10, Color.red, Mathf.Infinity);
+            //Vector3 toPosition = ColumnBotPoint.transform.position;
+            ////print(toPosition);
 
-        //Debug.DrawLine(col1top,  , Color.red, Mathf.Infinity);
-        //col1 = (col2top.transform.position-col1top.transform.position).normalized;
-        //Debug.Log(col1.ToString());
-        ////var col = col1top.transform.position - col1bot.transform.position.y;
+            //direction = toPosition - fromPosition;
+            //RaycastHit hit;
+
+            //for (float a = 0; a <= 4.5f; a += 0.56f)
+            //{
+            //    Vector3 setX = new Vector3(0f + a, 0, 0);
+            //    Debug.DrawRay(fromPosition + setX, direction, Color.white);
+
+            //    //if (Physics2D.Linecast(fromPosition + setX, direction,out hit))
+            //    //{
+            //    //    print(hit.collider.transform);
+            //    //}
+            //}
+        }
 
     }
 
-    
     void Update()
     {
-        RaycastHit hit;
-
-        Vector2 fromPosition = col1top.transform.position;
-        Vector2 toPosition = col1bot.transform.position;
-        direction = toPosition - fromPosition;
-
-        if (Physics.Raycast(col1top.transform.position, direction, out hit))
+        if (startDone == true)
         {
-            print("ray just hit the gameobject: " + hit.collider.gameObject.name);
+            //GetHexagonsbyColumn();
+            //foreach (var x in columnList)
+            //{
+            //    Debug.Log(x.name.ToString());
+            //}
+            //print("size of list" + columnList.Count.ToString());
         }
+
 
     }
 
@@ -89,45 +97,67 @@ public class GameManager : MonoBehaviour
 
     IEnumerator GameStart()
     {
-        //for loop creates first hexagons 
+        //columnRoot object represent game with and its hexagon on same column
+
+        for (int i = 0; i <= gameWidth - 1; i++)
+        {
+            GameObject root = new GameObject();
+            root.name = "Column" + (i + 1).ToString();
+            root.transform.position = new Vector2(-1.92f + (i * 0.56f), 2f);
+        }
+
+        //Loop creates first hexagons
         for (int k = 1; k < 19; k++)
         {
+
+            //hexagons are created 4 by 4. First 4 hexagon are aligned by x coordinate
             if (k % 2 == 1)
             {
+                int columnCounter = 2;
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
                     Vector2 position = new Vector2(-1.36f + i, 2);
-
-                    Instantiate(gm, position, Quaternion.identity);
+                    gm = Instantiate(gm, position, Quaternion.identity);
+                    gm.name = hexagonName + columnCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    
-                    yield return new WaitForSeconds(0.3f);
+                    gm.transform.parent = GameObject.Find("Column" + columnCounter.ToString()).transform;
+                    columnCounter += 2;
+
+                    yield return new WaitForSeconds(0.1f);
                 }
             }
             else
             {
+                int colmunCounter = 1;
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
                     Vector2 position = new Vector2(-1.92f + i, 2);
-
-                    Instantiate(gm, position, Quaternion.identity);
+                    gm = Instantiate(gm, position, Quaternion.identity);
+                    gm.name = hexagonName + colmunCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
+                    gm.transform.parent=GameObject.Find("Column" + colmunCounter.ToString()).transform;
+                    colmunCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
                 }
             }
 
         }
-
+        startDone = true;
     }
 
     IEnumerator Start()
     {
         // Start function GameStart as a coroutine
         yield return StartCoroutine("GameStart");
+    }
+
+    void GetHexagonsbyColumn()
+    {
+        //columnList.Add(GameObject.Find("hexagon1"));
     }
 }
