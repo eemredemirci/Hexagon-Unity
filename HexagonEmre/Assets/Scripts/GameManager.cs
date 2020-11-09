@@ -113,34 +113,34 @@ public class GameManager : MonoBehaviour
             //hexagons are created 4 by 4. First 4 hexagon are aligned by x coordinate
             if (k % 2 == 1)
             {
-                int columnCounter = 2;
+                int nameCounter = 2;
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
                     Vector2 position = new Vector2(-1.36f + i, 2);
                     gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + columnCounter;
+                    gm.name = hexagonName + nameCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent = GameObject.Find("Column" + columnCounter.ToString()).transform;
-                    columnCounter += 2;
+                    gm.transform.parent = GameObject.Find("Column" + nameCounter.ToString()).transform;
+                    nameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
                 }
             }
             else
             {
-                int colmunCounter = 1;
+                int nameCounter = 1;
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
                     Vector2 position = new Vector2(-1.92f + i, 2);
                     gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + colmunCounter;
+                    gm.name = hexagonName + nameCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent=GameObject.Find("Column" + colmunCounter.ToString()).transform;
-                    colmunCounter += 2;
+                    gm.transform.parent=GameObject.Find("Column" + nameCounter.ToString()).transform;
+                    nameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
                 }
