@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     public int gameLenght = 9;
     private Vector3 direction;
     string hexagonName = "hexagon";
+    int HexnameCounter = 1;
+
 
 
     [Header("Hexagons Colors")]
@@ -75,15 +77,27 @@ public class GameManager : MonoBehaviour
     {
         if (startDone == true)
         {
-            //GetHexagonsbyColumn();
-            //foreach (var x in columnList)
-            //{
-            //    Debug.Log(x.name.ToString());
-            //}
-            //print("size of list" + columnList.Count.ToString());
+            /*
+            //check Is column exist
+            for (int i = 1; i <= gameWidth; i++)
+            {
+                if (GameObject.Find("Column" + i.ToString()) != null)
+                {
+                    //check Is Column hexagons objects
+                    for (int j = 1; i <= gameLenght; i++)
+                    {
+                        //if the bottom of a hexagon is empty 
+                        if (GameObject.Find("hexagon" + i.ToString()) == null)
+                        {
+                        //hexagonJ doesnt exist do close the companents of 
+                        //those who come after
+
+                        }
+                    }
+                }
+            }
+            */
         }
-
-
     }
 
     private void pickColors()
@@ -105,45 +119,51 @@ public class GameManager : MonoBehaviour
             root.name = "Column" + (i + 1).ToString();
             root.transform.position = new Vector2(-1.92f + (i * 0.56f), 2f);
         }
-
         //Loop creates first hexagons
         for (int k = 1; k < 19; k++)
         {
+            Debug.Log("K=" + k.ToString());
 
-            //hexagons are created 4 by 4. First 4 hexagon are aligned by x coordinate
+
+            //hexagons are created 4 by 4.
             if (k % 2 == 1)
             {
-                int nameCounter = 2;
+                int ColnameCounter = 2;
+
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
+                    Debug.Log("iiiii=");
                     Vector2 position = new Vector2(-1.36f + i, 2);
                     gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + nameCounter;
+                    gm.name = hexagonName + HexnameCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent = GameObject.Find("Column" + nameCounter.ToString()).transform;
-                    nameCounter += 2;
+                    gm.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
                 }
             }
-            else
+            else if (k % 2 == 0)
             {
-                int nameCounter = 1;
-                for (float i = 0; i <= 4f; i += 1.12f)
+                int ColnameCounter = 1;
+                for (float j = 0; j <= 4f; j += 1.12f)
                 {
-                    Vector2 position = new Vector2(-1.92f + i, 2);
+                    Debug.Log("jjjjjj=");
+                    Vector2 position = new Vector2(-1.92f + j, 2);
                     gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + nameCounter;
+                    gm.name = hexagonName + HexnameCounter;
                     pickColors();
                     var hexColor = gm.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent=GameObject.Find("Column" + nameCounter.ToString()).transform;
-                    nameCounter += 2;
+                    gm.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
+                    //After instantiate 8 hex +1 nameCounter
                 }
+                HexnameCounter++;
             }
 
         }
