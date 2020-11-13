@@ -8,13 +8,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager gameManager;
 
-    //touch test
+    //----------------touch test
     public Text phaseDisplayText;
     private Touch theTouch;
     private float timeTouchEnded;
     private float displayTime = .5f;
-
-    public Camera camera;
+    //---------------------
 
     private IEnumerator coroutine;
     public bool startDone;
@@ -45,9 +44,12 @@ public class GameManager : MonoBehaviour
     public GameObject tempObj;
     public GameObject root;
 
+    Collider2D[] hitTRiple = new Collider2D[2];
+    bool isSelected = false;
+
     void Awake()
     {
-        
+
         startDone = false;
         //Add the default color to list
         //note: we can use while case
@@ -117,31 +119,45 @@ public class GameManager : MonoBehaviour
         //}
     }
 
-    GameObject ClickSelect()
+    void ClickSelect()
     {
         //Converting Mouse Pos to 2D (vector2) World Pos
         Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
         RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
-
         if (hit)
         {
-            
             Debug.Log(hit.transform.name);
-            Debug.Log(hit.transform.position);
-            SelectWithinRadius(rayPos, .32f);
+            //Debug.Log(hit.transform.position);
+            SelectWithinRadius(rayPos, 0.3f);
 
-            return hit.transform.gameObject;
+            //return hit.transform.gameObject;
         }
-        else return null;
+        else
+        {
+            //return null
+        }
     }
 
     void SelectWithinRadius(Vector3 center, float radius)
     {
-        Collider2D[] hit = Physics2D.OverlapCircleAll(center, radius);
-        foreach (var hitCollider in hit)
+        if (isSelected)
         {
-            print(hitCollider.transform.parent.name+hitCollider.name);
+            foreach (var hitCollider in hitTRiple)
+            {
+                //print(hitCollider.transform.parent.name + hitCollider.name);
+
+                hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
+            }
         }
+
+        hitTRiple = Physics2D.OverlapCircleAll(center, radius);
+
+        foreach (var hitCollider in hitTRiple)
+        {
+            //print(hitCollider.transform.parent.name + hitCollider.name);
+            hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
+        }
+        isSelected = true;
     }
 
 
@@ -180,8 +196,7 @@ public class GameManager : MonoBehaviour
                     hexModel = Instantiate(hexModel, position, Quaternion.identity);
                     hexModel.name = hexagonName + HexnameCounter;
                     pickColors();
-                    var hexColor = hexModel.GetComponent<SpriteRenderer>();
-                    hexColor.color = randomColor;
+                    hexModel.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
                     hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
@@ -198,8 +213,7 @@ public class GameManager : MonoBehaviour
                     hexModel = Instantiate(hexModel, position, Quaternion.identity);
                     hexModel.name = hexagonName + HexnameCounter;
                     pickColors();
-                    var hexColor = hexModel.GetComponent<SpriteRenderer>();
-                    hexColor.color = randomColor;
+                    hexModel.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
                     hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
