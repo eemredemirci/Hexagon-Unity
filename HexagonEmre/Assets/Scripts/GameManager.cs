@@ -1,22 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager gameManager;
+
+    //touch test
+    public Text phaseDisplayText;
+    private Touch theTouch;
+    private float timeTouchEnded;
+    private float displayTime = .5f;
+
+    public Camera camera;
+
     private IEnumerator coroutine;
-    bool startDone = false;
+    public bool startDone;
+
     [Header("Column Points")]
 
-    public Transform ColumnTopPoint;
-    public Transform ColumnBotPoint;
     public int gameWidth = 8;
     public int gameLenght = 9;
-    private Vector3 direction;
-    string hexagonName = "hexagon";
-    int HexnameCounter = 1;
-
-
+    public string hexagonName = "hexagon";
 
     [Header("Hexagons Colors")]
     public Color color1;
@@ -28,17 +35,22 @@ public class GameManager : MonoBehaviour
     public Color color7;
     public Color color8;
     public Color color9;
+    List<Color> colorList = new List<Color>();
+    public Color randomColor;
 
     [Header("Hexagon Model")]
-    public GameObject gm;
-    private Color randomColor;
-    List<Color> colorList = new List<Color>();
-    List<GameObject> columnList = new List<GameObject>();
+    public GameObject hexModel;
+    int HexnameCounter = 1;
 
+    public GameObject tempObj;
+    public GameObject root;
 
     void Awake()
     {
-        //Add the color to list
+        
+        startDone = false;
+        //Add the default color to list
+        //note: we can use while case
         colorList.Add(color1);
         colorList.Add(color2);
         colorList.Add(color3);
@@ -46,84 +58,115 @@ public class GameManager : MonoBehaviour
         colorList.Add(color5);
     }
 
-    void FixedUpdate()
+    void Start()
     {
-        if (startDone == true)
+        if (!gameManager)
         {
-            //Vector3 fromPosition = ColumnTopPoint.transform.position;
-            ////print(fromPosition);
-
-            //Vector3 toPosition = ColumnBotPoint.transform.position;
-            ////print(toPosition);
-
-            //direction = toPosition - fromPosition;
-            //RaycastHit hit;
-
-            //for (float a = 0; a <= 4.5f; a += 0.56f)
-            //{
-            //    Vector3 setX = new Vector3(0f + a, 0, 0);
-            //    Debug.DrawRay(fromPosition + setX, direction, Color.white);
-
-            //    //if (Physics2D.Linecast(fromPosition + setX, direction,out hit))
-            //    //{
-            //    //    print(hit.collider.transform);
-            //    //}
-            //}
+            gameManager = this;
         }
-
+        startDone = false;
+        Application.targetFrameRate = 60;
+        // Start function create column as a coroutine
+        CreateColumn();
+        StartCoroutine(CreateStartSceneHexagon());
     }
 
     void Update()
     {
         if (startDone == true)
         {
-            /*
-            //check Is column exist
-            for (int i = 1; i <= gameWidth; i++)
-            {
-                if (GameObject.Find("Column" + i.ToString()) != null)
-                {
-                    //check Is Column hexagons objects
-                    for (int j = 1; i <= gameLenght; i++)
-                    {
-                        //if the bottom of a hexagon is empty 
-                        if (GameObject.Find("hexagon" + i.ToString()) == null)
-                        {
-                        //hexagonJ doesnt exist do close the companents of 
-                        //those who come after
+            //StartCoroutine(DropHexagons());
 
-                        }
-                    }
-                }
-            }
-            */
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            ClickSelect();
+        }
+
+        //Touch select
+
+        //if (Input.touchCount > 0)
+        //{
+        //    theTouch = Input.GetTouch(0);
+        //    phaseDisplayText.text = theTouch.phase.ToString();
+
+        //    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        //    Debug.DrawRay(ray.origin, ray.direction * 100, Color.yellow, 5f);
+        //    if (Physics.Raycast(ray, out RaycastHit hit))
+        //    {
+        //        Debug.Log(hit.transform.name);
+        //        if (hit.collider != null)
+        //        {
+
+        //            GameObject touchedObject = hit.transform.gameObject;
+
+        //            phaseDisplayText.text = "Touched " + touchedObject.transform.name;
+        //        }
+        //    }
+
+        //    if (theTouch.phase == TouchPhase.Ended)
+        //    {
+        //        timeTouchEnded = Time.time;
+        //    }
+        //}
+
+        //else if (Time.time - timeTouchEnded > displayTime)
+        //{
+        //    phaseDisplayText.text = "";
+        //}
+    }
+
+    GameObject ClickSelect()
+    {
+        //Converting Mouse Pos to 2D (vector2) World Pos
+        Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+        RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
+
+        if (hit)
+        {
+            
+            Debug.Log(hit.transform.name);
+            Debug.Log(hit.transform.position);
+            SelectWithinRadius(rayPos, .32f);
+
+            return hit.transform.gameObject;
+        }
+        else return null;
+    }
+
+    void SelectWithinRadius(Vector3 center, float radius)
+    {
+        Collider2D[] hit = Physics2D.OverlapCircleAll(center, radius);
+        foreach (var hitCollider in hit)
+        {
+            print(hitCollider.transform.parent.name+hitCollider.name);
         }
     }
 
-    private void pickColors()
-    {
-        //collider.gameObject.GetComponent<Renderer>().material.color = colorList[Random.Range(0, colorList.Count - 1)];
-        randomColor = colorList[Random.Range(0, colorList.Count - 1)];
-        randomColor.a = 1f;
-        //Debug.Log(randomColor.ToString());
-        Debug.ClearDeveloperConsole();
-    }
 
-    IEnumerator GameStart()
+    void CreateColumn()
     {
-        //columnRoot object represent game with and its hexagon on same column
-
+        //create column Parent gameobjects
         for (int i = 0; i <= gameWidth - 1; i++)
         {
-            GameObject root = new GameObject();
-            root.name = "Column" + (i + 1).ToString();
-            root.transform.position = new Vector2(-1.92f + (i * 0.56f), 2f);
+
+            Vector2 pos = new Vector2(-1.92f + (i * 0.56f), 2f);
+            tempObj = Instantiate(root, pos, Quaternion.identity);
+            tempObj.name = "Column" + (i + 1).ToString();
+            tempObj.transform.position = pos;
+            tempObj.AddComponent<Column>();
+            var script = tempObj.GetComponent<Column>();
+            script.enabled = true;
         }
+
+    }
+
+    IEnumerator CreateStartSceneHexagon()
+    {
         //Loop creates first hexagons
         for (int k = 1; k < 19; k++)
         {
-            Debug.Log("K=" + k.ToString());
-
 
             //hexagons are created 4 by 4.
             if (k % 2 == 1)
@@ -132,14 +175,14 @@ public class GameManager : MonoBehaviour
 
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
-                    Debug.Log("iiiii=");
+
                     Vector2 position = new Vector2(-1.36f + i, 2);
-                    gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + HexnameCounter;
+                    hexModel = Instantiate(hexModel, position, Quaternion.identity);
+                    hexModel.name = hexagonName + HexnameCounter;
                     pickColors();
-                    var hexColor = gm.GetComponent<SpriteRenderer>();
+                    var hexColor = hexModel.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
@@ -150,18 +193,18 @@ public class GameManager : MonoBehaviour
                 int ColnameCounter = 1;
                 for (float j = 0; j <= 4f; j += 1.12f)
                 {
-                    Debug.Log("jjjjjj=");
+
                     Vector2 position = new Vector2(-1.92f + j, 2);
-                    gm = Instantiate(gm, position, Quaternion.identity);
-                    gm.name = hexagonName + HexnameCounter;
+                    hexModel = Instantiate(hexModel, position, Quaternion.identity);
+                    hexModel.name = hexagonName + HexnameCounter;
                     pickColors();
-                    var hexColor = gm.GetComponent<SpriteRenderer>();
+                    var hexColor = hexModel.GetComponent<SpriteRenderer>();
                     hexColor.color = randomColor;
-                    gm.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
-                    //After instantiate 8 hex +1 nameCounter
+
                 }
                 HexnameCounter++;
             }
@@ -170,14 +213,12 @@ public class GameManager : MonoBehaviour
         startDone = true;
     }
 
-    IEnumerator Start()
+    public void pickColors()
     {
-        // Start function GameStart as a coroutine
-        yield return StartCoroutine("GameStart");
+        //collider.gameObject.GetComponent<Renderer>().material.color = colorList[Random.Range(0, colorList.Count - 1)];
+        randomColor = colorList[Random.Range(0, colorList.Count - 1)];
+        randomColor.a = 1f;
+        //Debug.Log(randomColor.ToString());
     }
 
-    void GetHexagonsbyColumn()
-    {
-        //columnList.Add(GameObject.Find("hexagon1"));
-    }
 }
