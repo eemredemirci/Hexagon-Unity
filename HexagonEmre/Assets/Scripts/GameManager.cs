@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
     public GameObject tempObj;
     public GameObject root;
 
-    Collider2D[] hitTRiple = new Collider2D[2];
+    Collider2D[] hitTRpiple,temp;
     bool isSelected = false;
 
     void Awake()
@@ -100,9 +100,7 @@ public class GameManager : MonoBehaviour
         //        Debug.Log(hit.transform.name);
         //        if (hit.collider != null)
         //        {
-
         //            GameObject touchedObject = hit.transform.gameObject;
-
         //            phaseDisplayText.text = "Touched " + touchedObject.transform.name;
         //        }
         //    }
@@ -128,8 +126,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log(hit.transform.name);
             //Debug.Log(hit.transform.position);
-            SelectWithinRadius(rayPos, 0.3f);
-
+            SelectWithinRadius(rayPos, 0.26f);
             //return hit.transform.gameObject;
         }
         else
@@ -142,17 +139,16 @@ public class GameManager : MonoBehaviour
     {
         if (isSelected)
         {
-            foreach (var hitCollider in hitTRiple)
+            foreach (var hitCollider in temp)
             {
                 //print(hitCollider.transform.parent.name + hitCollider.name);
-
                 hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
             }
         }
 
-        hitTRiple = Physics2D.OverlapCircleAll(center, radius);
+        temp = Physics2D.OverlapCircleAll(center, radius);
 
-        foreach (var hitCollider in hitTRiple)
+        foreach (var hitCollider in temp)
         {
             //print(hitCollider.transform.parent.name + hitCollider.name);
             hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
@@ -160,13 +156,11 @@ public class GameManager : MonoBehaviour
         isSelected = true;
     }
 
-
     void CreateColumn()
     {
         //create column Parent gameobjects
         for (int i = 0; i <= gameWidth - 1; i++)
         {
-
             Vector2 pos = new Vector2(-1.92f + (i * 0.56f), 2f);
             tempObj = Instantiate(root, pos, Quaternion.identity);
             tempObj.name = "Column" + (i + 1).ToString();
@@ -175,7 +169,6 @@ public class GameManager : MonoBehaviour
             var script = tempObj.GetComponent<Column>();
             script.enabled = true;
         }
-
     }
 
     IEnumerator CreateStartSceneHexagon()
@@ -222,7 +215,6 @@ public class GameManager : MonoBehaviour
                 }
                 HexnameCounter++;
             }
-
         }
         startDone = true;
     }

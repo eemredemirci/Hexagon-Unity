@@ -12,7 +12,7 @@
 			if (InputUtils.MouseDownOrTap()) {
 				Vector2 pos = InputUtils.MouseOrTapPosition();
 				Vector3 worldPos = InputUtils.InputToWorldPosition(pos);
-                worldPos = new Vector3(worldPos.x,worldPos.y,worldPos.z - 1f);
+                worldPos = new Vector3(worldPos.x,worldPos.y,1f);
 				Instantiate(tapEffect, worldPos, Quaternion.identity);
 			}
 		}
