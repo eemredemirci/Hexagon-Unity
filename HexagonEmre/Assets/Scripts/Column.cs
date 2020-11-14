@@ -6,7 +6,7 @@ public class Column : MonoBehaviour
 {
     public GameObject columnObj;
     GameObject hexObj;
-
+    
     
     List<GameObject> hexagon = new List<GameObject>();
     int droptick = 1;
@@ -27,18 +27,18 @@ public class Column : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.gameManager.startDone)
-        {
-            if (hexagon.Count != hexCount)
-            {
-                //get first hexagons to list
-                GetHexagons();
-            }
-            else
-            {
-                //drop and ins
-            }
-        }
+        //if (GameManager.gameManager.startDone)
+        //{
+        //    if (hexagon.Count != hexCount)
+        //    {
+        //        //get first hexagons to list
+        //        GetHexagons();
+        //    }
+        //    else
+        //    {
+        //        //drop and ins
+        //    }
+        //}
 
         //print("start done");
         //if (Input.GetKeyDown(KeyCode.L))

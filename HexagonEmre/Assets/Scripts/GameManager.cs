@@ -44,8 +44,12 @@ public class GameManager : MonoBehaviour
     public GameObject tempObj;
     public GameObject root;
 
-    Collider2D[] hitTRpiple,temp;
+
+    Collider2D[] hitTRpiple, temp;
     bool isSelected = false;
+
+    Vector2[] rayHelper = new Vector2[6];
+    RaycastHit2D[] hitHelper = new RaycastHit2D[6];
 
     void Awake()
     {
@@ -120,19 +124,69 @@ public class GameManager : MonoBehaviour
     void ClickSelect()
     {
         //Converting Mouse Pos to 2D (vector2) World Pos
+
+        if (isSelected)
+        {
+            foreach (var hitCollider in hitHelper)
+            {
+                if (hitCollider.transform != null)
+                {
+                    hitCollider.transform.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
+                }
+            }
+        }
+
         Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
         RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
-        if (hit)
+        if(hit)
         {
-            Debug.Log(hit.transform.name);
-            //Debug.Log(hit.transform.position);
-            SelectWithinRadius(rayPos, 0.26f);
-            //return hit.transform.gameObject;
+
         }
-        else
+        // vertex to vertex lenght 1.0529
+        // side lenght = 0.486782
+        //apotem (between mid point of hex and side mid) = 0.4216
+
+        
+        rayHelper[0] = new Vector2(rayPos.x - 0.281f, rayPos.y - 0.162f);
+        rayHelper[1] = new Vector2(rayPos.x - 0.281f, rayPos.y + 0.162f);
+        rayHelper[2] = new Vector2(rayPos.x, rayPos.y + 0.325f);
+        rayHelper[3] = new Vector2(rayPos.x + 0.281f, rayPos.y + 0.162f);
+        rayHelper[4] = new Vector2(rayPos.x + 0.281f, rayPos.y - 0.162f);
+        rayHelper[5] = new Vector2(rayPos.x, rayPos.y - 0.325f);
+
+        for (int i = 0; i < 6; i++)
         {
-            //return null
+            hitHelper[i] = Physics2D.Raycast(rayHelper[i], Vector2.zero, 0f);
+
         }
+
+        foreach (var hitCollider in hitHelper)
+        {
+            if (hitCollider.transform != null)
+            {
+                hitCollider.transform.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
+            }
+        }
+
+        foreach (var hitCollider in hitHelper)
+        {
+            if (hitCollider.transform != null)
+            {
+                //print(hit+hitCollider.transform.name + hitCollider.transform.parent.name);
+            }
+            else
+            {
+                //print null object to detech which side of hexagon clicked
+            }
+        }
+        isSelected = true;
+
+        //if helper 4 5 == hit or 4 5 transform null
+
+        //for (int i = 0; i <= 6; i++)
+        //{
+        //    temp[i] = hits[i].collider;
+        //}
     }
 
     void SelectWithinRadius(Vector3 center, float radius)
