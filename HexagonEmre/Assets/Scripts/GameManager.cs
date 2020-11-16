@@ -39,16 +39,19 @@ public class GameManager : MonoBehaviour
 
     [Header("Hexagon Model")]
     public GameObject hexModel;
+
     int HexnameCounter = 1;
+    List<Color> allHexagons = new List<Color>();
 
     public GameObject tempObj;
     public GameObject root;
 
+
     bool isSelected = false;
     Vector2[] rayHelper = new Vector2[6];
-
-
+    Vector2 rayPos = new Vector2();
     GameObject[] selectedObj = new GameObject[3];
+
     void Awake()
     {
         if (!gameManager)
@@ -81,43 +84,43 @@ public class GameManager : MonoBehaviour
 
         }
 
+        //PC
         if (Input.GetMouseButtonDown(0))
         {
-            ClickSelect();
+            ClickSelect(0);
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RestartScene();
         }
 
         //Mobile Touch select
 
-        //if (Input.touchCount > 0)
-        //{
-        //    theTouch = Input.GetTouch(0);
-        //    phaseDisplayText.text = theTouch.phase.ToString();
+        if (Input.touchCount > 0)
+        {
+            theTouch = Input.GetTouch(0);
+            phaseDisplayText.text = theTouch.phase.ToString();
 
-        //    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        //    Debug.DrawRay(ray.origin, ray.direction * 100, Color.yellow, 5f);
-        //    if (Physics.Raycast(ray, out RaycastHit hit))
-        //    {
-        //        Debug.Log(hit.transform.name);
-        //        if (hit.collider != null)
-        //        {
-        //            GameObject touchedObject = hit.transform.gameObject;
-        //            phaseDisplayText.text = "Touched " + touchedObject.transform.name;
-        //        }
-        //    }
+            if (theTouch.phase == TouchPhase.Ended)
+            {
+                timeTouchEnded = Time.time;
+                ClickSelect(1);
+            }
+        }
 
-        //    if (theTouch.phase == TouchPhase.Ended)
-        //    {
-        //        timeTouchEnded = Time.time;
-        //    }
-        //}
-
-        //else if (Time.time - timeTouchEnded > displayTime)
-        //{
-        //    phaseDisplayText.text = "";
-        //}
+        else if (Time.time - timeTouchEnded > displayTime)
+        {
+            phaseDisplayText.text = "";
+        }
     }
 
-    void ClickSelect()
+    public void RestartScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void ClickSelect(int Platform)
     {
         //Converting Mouse Pos to 2D (vector2) World Pos
         if (isSelected)
@@ -129,7 +132,15 @@ public class GameManager : MonoBehaviour
         }
 
         //main select. get hit from mouse as first selected hex
-        Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+
+        if (Platform == 0)
+        {
+            rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+        }
+        else
+        {
+            rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position).x, Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position).y);
+        }
         RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
 
         // vertex to vertex lenght 1.0529
@@ -148,7 +159,7 @@ public class GameManager : MonoBehaviour
         {
             //get main select
             selectedObj[0] = hit.collider.gameObject;
-
+            print((rayPos.x - selectedObj[0].transform.position.x).ToString() + " coordinate diff " + (rayPos.y - selectedObj[0].transform.position.y).ToString());
             //get raycasts' hits
             for (int i = 0; i <= 5; i++)
             {
@@ -159,23 +170,47 @@ public class GameManager : MonoBehaviour
                     Debug.LogWarning("hit Helper Selection  " + i + "   " + hitHelper[i] + " " + hitHelper[i].transform.parent);
 
                 }
-                //eliminate hithelper null raycastss
-                if (!hitHelper[i])
-                {
-                    print(i + " null");
-                }
-
             }
 
-            print("-------------" + hitHelper.Length.ToString() + "----------------");
+            //print("-------------" + hitHelper.Length.ToString() + "----------------");
 
             //calculate last 2 hexagon by use hithelper null
+
+            //select the
+
+            //select the 2 hexagons that are not on the edge
             if (hitHelper[3] == selectedObj[0] && hitHelper[4] == selectedObj[0])
             {
-                print("gat it");
+
                 selectedObj[1] = hitHelper[0].transform.gameObject;
                 selectedObj[2] = hitHelper[1].transform.gameObject;
             }
+            else if (hitHelper[4] == selectedObj[0] && hitHelper[5] == selectedObj[0])
+            {
+                selectedObj[1] = hitHelper[1].transform.gameObject;
+                selectedObj[2] = hitHelper[2].transform.gameObject;
+            }
+            else if (hitHelper[5] == selectedObj[0] && hitHelper[0] == selectedObj[0])
+            {
+                selectedObj[1] = hitHelper[2].transform.gameObject;
+                selectedObj[2] = hitHelper[3].transform.gameObject;
+            }
+            else if (hitHelper[0] == selectedObj[0] && hitHelper[1] == selectedObj[0])
+            {
+                selectedObj[1] = hitHelper[3].transform.gameObject;
+                selectedObj[2] = hitHelper[4].transform.gameObject;
+            }
+            else if (hitHelper[1] == selectedObj[0] && hitHelper[2] == selectedObj[0])
+            {
+                selectedObj[1] = hitHelper[4].transform.gameObject;
+                selectedObj[2] = hitHelper[5].transform.gameObject;
+            }
+            else if (hitHelper[2] == selectedObj[0] && hitHelper[3] == selectedObj[0])
+            {
+                selectedObj[1] = hitHelper[5].transform.gameObject;
+                selectedObj[2] = hitHelper[0].transform.gameObject;
+            }
+
             OutlineHighlighter();
         }
     }
@@ -184,7 +219,7 @@ public class GameManager : MonoBehaviour
     {
         foreach (var selected in selectedObj)
         {
-            print(selected);
+            //print(selected);
             selected.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
         }
         isSelected = true;
@@ -276,6 +311,11 @@ public class GameManager : MonoBehaviour
         //collider.gameObject.GetComponent<Renderer>().material.color = colorList[Random.Range(0, colorList.Count - 1)];
         randomColor = colorList[Random.Range(0, colorList.Count)];
         //Debug.Log(randomColor.ToString());
+    }
+
+    void GetAllHexagons(GameObject gObject)
+    {
+
     }
 
 }
