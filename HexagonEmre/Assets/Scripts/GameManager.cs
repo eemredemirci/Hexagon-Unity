@@ -44,17 +44,17 @@ public class GameManager : MonoBehaviour
     public GameObject tempObj;
     public GameObject root;
 
-
-    Collider2D[] hitTRpiple, temp;
     bool isSelected = false;
-
     Vector2[] rayHelper = new Vector2[6];
-    RaycastHit2D[] hitHelper = new RaycastHit2D[6];
 
+
+    GameObject[] selectedObj = new GameObject[3];
     void Awake()
     {
-
-        startDone = false;
+        if (!gameManager)
+        {
+            gameManager = this;
+        }
         //Add the default color to list
         //note: we can use while case
         colorList.Add(color1);
@@ -66,10 +66,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        if (!gameManager)
-        {
-            gameManager = this;
-        }
         startDone = false;
         Application.targetFrameRate = 60;
         // Start function create column as a coroutine
@@ -90,7 +86,7 @@ public class GameManager : MonoBehaviour
             ClickSelect();
         }
 
-        //Touch select
+        //Mobile Touch select
 
         //if (Input.touchCount > 0)
         //{
@@ -124,29 +120,22 @@ public class GameManager : MonoBehaviour
     void ClickSelect()
     {
         //Converting Mouse Pos to 2D (vector2) World Pos
-
         if (isSelected)
         {
-            foreach (var hitCollider in hitHelper)
+            foreach (var selected in selectedObj)
             {
-                if (hitCollider.transform != null)
-                {
-                    hitCollider.transform.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
-                }
+                selected.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
             }
         }
 
+        //main select. get hit from mouse as first selected hex
         Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
         RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
-        if(hit)
-        {
 
-        }
         // vertex to vertex lenght 1.0529
         // side lenght = 0.486782
         //apotem (between mid point of hex and side mid) = 0.4216
 
-        
         rayHelper[0] = new Vector2(rayPos.x - 0.281f, rayPos.y - 0.162f);
         rayHelper[1] = new Vector2(rayPos.x - 0.281f, rayPos.y + 0.162f);
         rayHelper[2] = new Vector2(rayPos.x, rayPos.y + 0.325f);
@@ -154,61 +143,73 @@ public class GameManager : MonoBehaviour
         rayHelper[4] = new Vector2(rayPos.x + 0.281f, rayPos.y - 0.162f);
         rayHelper[5] = new Vector2(rayPos.x, rayPos.y - 0.325f);
 
-        for (int i = 0; i < 6; i++)
+        GameObject[] hitHelper = new GameObject[6];
+        if (hit.transform != null)
         {
-            hitHelper[i] = Physics2D.Raycast(rayHelper[i], Vector2.zero, 0f);
+            //get main select
+            selectedObj[0] = hit.collider.gameObject;
 
-        }
-
-        foreach (var hitCollider in hitHelper)
-        {
-            if (hitCollider.transform != null)
+            //get raycasts' hits
+            for (int i = 0; i <= 5; i++)
             {
-                hitCollider.transform.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
-            }
-        }
+                RaycastHit2D obj = Physics2D.Raycast(rayHelper[i], Vector2.zero, 0f);
+                if (obj.transform != null)
+                {
+                    hitHelper[i] = obj.transform.gameObject;
+                    Debug.LogWarning("hit Helper Selection  " + i + "   " + hitHelper[i] + " " + hitHelper[i].transform.parent);
 
-        foreach (var hitCollider in hitHelper)
-        {
-            if (hitCollider.transform != null)
+                }
+                //eliminate hithelper null raycastss
+                if (!hitHelper[i])
+                {
+                    print(i + " null");
+                }
+
+            }
+
+            print("-------------" + hitHelper.Length.ToString() + "----------------");
+
+            //calculate last 2 hexagon by use hithelper null
+            if (hitHelper[3] == selectedObj[0] && hitHelper[4] == selectedObj[0])
             {
-                //print(hit+hitCollider.transform.name + hitCollider.transform.parent.name);
+                print("gat it");
+                selectedObj[1] = hitHelper[0].transform.gameObject;
+                selectedObj[2] = hitHelper[1].transform.gameObject;
             }
-            else
-            {
-                //print null object to detech which side of hexagon clicked
-            }
+            OutlineHighlighter();
         }
-        isSelected = true;
-
-        //if helper 4 5 == hit or 4 5 transform null
-
-        //for (int i = 0; i <= 6; i++)
-        //{
-        //    temp[i] = hits[i].collider;
-        //}
     }
 
-    void SelectWithinRadius(Vector3 center, float radius)
+    void OutlineHighlighter()
     {
-        if (isSelected)
+        foreach (var selected in selectedObj)
         {
-            foreach (var hitCollider in temp)
-            {
-                //print(hitCollider.transform.parent.name + hitCollider.name);
-                hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
-            }
-        }
-
-        temp = Physics2D.OverlapCircleAll(center, radius);
-
-        foreach (var hitCollider in temp)
-        {
-            //print(hitCollider.transform.parent.name + hitCollider.name);
-            hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
+            print(selected);
+            selected.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
         }
         isSelected = true;
     }
+
+    //void SelectWithinRadius(Vector3 center, float radius)
+    //{
+    //    if (isSelected)
+    //    {
+    //        foreach (var hitCollider in temp)
+    //        {
+    //            //print(hitCollider.transform.parent.name + hitCollider.name);
+    //            hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
+    //        }
+    //    }
+
+    //    temp = Physics2D.OverlapCircleAll(center, radius);
+
+    //    foreach (var hitCollider in temp)
+    //    {
+    //        //print(hitCollider.transform.parent.name + hitCollider.name);
+    //        hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
+    //    }
+    //    isSelected = true;
+    //}
 
     void CreateColumn()
     {
@@ -230,7 +231,6 @@ public class GameManager : MonoBehaviour
         //Loop creates first hexagons
         for (int k = 1; k < 19; k++)
         {
-
             //hexagons are created 4 by 4.
             if (k % 2 == 1)
             {
@@ -238,13 +238,12 @@ public class GameManager : MonoBehaviour
 
                 for (float i = 0; i <= 4f; i += 1.12f)
                 {
-
-                    Vector2 position = new Vector2(-1.36f + i, 2);
-                    hexModel = Instantiate(hexModel, position, Quaternion.identity);
-                    hexModel.name = hexagonName + HexnameCounter;
+                    Vector2 position = new Vector2(-1.36f + i, 2.4f);
+                    tempObj = Instantiate(hexModel, position, Quaternion.identity);
+                    tempObj.name = hexagonName + HexnameCounter;
                     pickColors();
-                    hexModel.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
-                    hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    tempObj.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
+                    tempObj.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
@@ -255,13 +254,12 @@ public class GameManager : MonoBehaviour
                 int ColnameCounter = 1;
                 for (float j = 0; j <= 4f; j += 1.12f)
                 {
-
-                    Vector2 position = new Vector2(-1.92f + j, 2);
-                    hexModel = Instantiate(hexModel, position, Quaternion.identity);
-                    hexModel.name = hexagonName + HexnameCounter;
+                    Vector2 position = new Vector2(-1.92f + j, 2.4f);
+                    tempObj = Instantiate(hexModel, position, Quaternion.identity);
+                    tempObj.name = hexagonName + HexnameCounter;
                     pickColors();
-                    hexModel.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
-                    hexModel.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
+                    tempObj.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
+                    tempObj.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
                     yield return new WaitForSeconds(0.1f);
@@ -276,8 +274,7 @@ public class GameManager : MonoBehaviour
     public void pickColors()
     {
         //collider.gameObject.GetComponent<Renderer>().material.color = colorList[Random.Range(0, colorList.Count - 1)];
-        randomColor = colorList[Random.Range(0, colorList.Count - 1)];
-        randomColor.a = 1f;
+        randomColor = colorList[Random.Range(0, colorList.Count)];
         //Debug.Log(randomColor.ToString());
     }
 
