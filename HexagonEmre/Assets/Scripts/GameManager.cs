@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     private Touch theTouch;
     private float timeTouchEnded;
     private float displayTime = .5f;
+    private Vector2 touchStartCoordinates;
     //---------------------
 
     private IEnumerator coroutine;
@@ -48,8 +49,8 @@ public class GameManager : MonoBehaviour
 
 
     bool isSelected = false;
-    Vector2[] rayHelper = new Vector2[6];
-    Vector2 rayPos = new Vector2();
+    private Vector2[] rayHelper = new Vector2[6];
+    private Vector2 rayPos = new Vector2();
     GameObject[] selectedObj = new GameObject[3];
 
     void Awake()
@@ -82,36 +83,44 @@ public class GameManager : MonoBehaviour
         {
             //StartCoroutine(DropHexagons());
 
-        }
-
-        //PC
-        if (Input.GetMouseButtonDown(0))
-        {
-            ClickSelect(0);
-        }
-
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            RestartScene();
-        }
-
-        //Mobile Touch select
-
-        if (Input.touchCount > 0)
-        {
-            theTouch = Input.GetTouch(0);
-            phaseDisplayText.text = theTouch.phase.ToString();
-
-            if (theTouch.phase == TouchPhase.Ended)
+            //PC
+            if (Input.GetMouseButtonDown(0))
             {
-                timeTouchEnded = Time.time;
-                ClickSelect(1);
+                ClickSelect(0);
             }
-        }
 
-        else if (Time.time - timeTouchEnded > displayTime)
-        {
-            phaseDisplayText.text = "";
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RestartScene();
+            }
+
+            //Mobile Touch select
+
+            if (Input.touchCount > 0)
+            {
+                theTouch = Input.GetTouch(0);
+                phaseDisplayText.text = theTouch.phase.ToString();
+
+                touchStartCoordinates = Input.GetTouch(0).position;
+
+                if (Input.GetTouch(0).phase == TouchPhase.Moved)
+                {
+                    DetectingRotation(1);
+                }
+
+                if (theTouch.phase == TouchPhase.Ended)
+                {
+                    timeTouchEnded = Time.time;
+                    ClickSelect(1);
+                    DetectingRotation(1);
+
+                }
+            }
+
+            else if (Time.time - timeTouchEnded > displayTime)
+            {
+                phaseDisplayText.text = "";
+            }
         }
     }
 
@@ -145,7 +154,7 @@ public class GameManager : MonoBehaviour
 
         // vertex to vertex lenght 1.0529
         // side lenght = 0.486782
-        //apotem (between mid point of hex and side mid) = 0.4216
+        //apotem (between mid point of hex to side mid) = 0.4216
 
         rayHelper[0] = new Vector2(rayPos.x - 0.281f, rayPos.y - 0.162f);
         rayHelper[1] = new Vector2(rayPos.x - 0.281f, rayPos.y + 0.162f);
@@ -157,9 +166,11 @@ public class GameManager : MonoBehaviour
         GameObject[] hitHelper = new GameObject[6];
         if (hit.transform != null)
         {
-            //get main select
+            //Get First Hex
             selectedObj[0] = hit.collider.gameObject;
-            print((rayPos.x - selectedObj[0].transform.position.x).ToString() + " coordinate diff " + (rayPos.y - selectedObj[0].transform.position.y).ToString());
+            //diff between mouse and hex position. To calc how click far from hex mid point to detect selection
+            //print((rayPos.x - selectedObj[0].transform.position.x).ToString() + " coordinate diff " + (rayPos.y - selectedObj[0].transform.position.y).ToString());
+
             //get raycasts' hits
             for (int i = 0; i <= 5; i++)
             {
@@ -167,18 +178,15 @@ public class GameManager : MonoBehaviour
                 if (obj.transform != null)
                 {
                     hitHelper[i] = obj.transform.gameObject;
-                    Debug.LogWarning("hit Helper Selection  " + i + "   " + hitHelper[i] + " " + hitHelper[i].transform.parent);
-
+                    //Debug.LogWarning("hit Helper Selection  " + i + "   " + hitHelper[i] + " " + hitHelper[i].transform.parent);
                 }
             }
 
             //print("-------------" + hitHelper.Length.ToString() + "----------------");
 
-            //calculate last 2 hexagon by use hithelper null
+            //calculate last 2 hexagon by use hithelper null items
 
-            //select the
-
-            //select the 2 hexagons that are not on the edge
+            //Get 2nd and 3rd hexagons that are not on the edge
             if (hitHelper[3] == selectedObj[0] && hitHelper[4] == selectedObj[0])
             {
                 selectedObj[1] = hitHelper[0].transform.gameObject;
@@ -209,20 +217,16 @@ public class GameManager : MonoBehaviour
                 selectedObj[1] = hitHelper[5].transform.gameObject;
                 selectedObj[2] = hitHelper[0].transform.gameObject;
             }
-            else
-            {
-                isSelected = false;
-            }
-
             OutlineHighlighter();
         }
+
     }
 
     void OutlineHighlighter()
     {
         foreach (var selected in selectedObj)
         {
-            //print(selected);
+            print(selected.name);
             selected.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = true;
         }
         isSelected = true;
@@ -233,7 +237,7 @@ public class GameManager : MonoBehaviour
         //create column Parent gameobjects
         for (int i = 0; i <= gameWidth - 1; i++)
         {
-            Vector2 pos = new Vector2(-1.92f + (i * 0.56f), 2f);
+            Vector2 pos = new Vector2(-1.92f + (i * 0.56f), 2.4f);
             tempObj = Instantiate(root, pos, Quaternion.identity);
             tempObj.name = "Column" + (i + 1).ToString();
             tempObj.transform.position = pos;
@@ -295,10 +299,60 @@ public class GameManager : MonoBehaviour
         //Debug.Log(randomColor.ToString());
     }
 
-    IEnumerator HexRotator()
+    IEnumerator HexRotator(bool CW)
+    {
+        Vector2 pos0, pos1, pos2;
+
+        foreach (var selected in selectedObj)
+        {
+            selected.transform.GetComponent<PolygonCollider2D>().enabled = false;
+        }
+
+        pos0 = selectedObj[0].transform.position;
+        pos1 = selectedObj[1].transform.position;
+        pos2 = selectedObj[2].transform.position;
+
+        if (CW)
+        {
+            selectedObj[0].transform.position = pos1;
+            selectedObj[1].transform.position = pos2;
+            selectedObj[2].transform.position = pos0;
+            yield return new WaitForSeconds(0.3f);
+        }
+        else
+        {
+            selectedObj[0].transform.position = pos2;
+            selectedObj[1].transform.position = pos0;
+            selectedObj[2].transform.position = pos1;
+            yield return new WaitForSeconds(0.3f);
+        }
+    }
+
+    void DetectingRotation(int platform)
     {
 
-        yield return new WaitForSeconds(0.1f);
+        Vector2 afterTouchCoordinates = Input.GetTouch(0).position;
+
+        if (platform == 1)
+        {
+
+        }
+        float distX = afterTouchCoordinates.x - touchStartCoordinates.x;
+        float distY = afterTouchCoordinates.y - touchStartCoordinates.y;
+
+        //dokunma başlangıç ve bitiş koordinatları üzerinden rotasyon tetiklenmesini kontrol eder.
+        if (distX > 0 || distY > 0)
+        {
+            HexRotator(true);
+
+        }
+        else
+        {
+            HexRotator(false);
+        }
+        theTouch = Input.GetTouch(0);
+        //phaseDisplayText.text = distX.ToString() + distY.ToString();
+
     }
 
 }
