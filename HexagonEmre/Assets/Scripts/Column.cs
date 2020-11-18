@@ -50,6 +50,7 @@ public class Column : MonoBehaviour
         //        Debug.Log(go);
         //    }
         //}
+        
     }
 
     private void GetHexagons()
@@ -113,18 +114,6 @@ public class Column : MonoBehaviour
         }
     }
 
-    //GameObject GetChildWithName(GameObject obj, string name)
-    //{
-    //    Transform trans = obj.transform;
-    //    Transform childTrans = trans.Find(name);
-    //    if (childTrans != null)
-    //    {
-    //        return childTrans.gameObject;
-    //    }
-    //    else
-    //    {
-    //        //print("null");
-    //        return null;
-    //    }
-    //}
+    
+
 }

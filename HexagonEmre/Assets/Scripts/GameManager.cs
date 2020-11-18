@@ -127,11 +127,11 @@ public class GameManager : MonoBehaviour
         {
             foreach (var selected in selectedObj)
             {
-                selected.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
+                selected.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
             }
         }
 
-        //main select. get hit from mouse as first selected hex
+        // main select. get hit from mouse as first selected hex
 
         if (Platform == 0)
         {
@@ -181,7 +181,6 @@ public class GameManager : MonoBehaviour
             //select the 2 hexagons that are not on the edge
             if (hitHelper[3] == selectedObj[0] && hitHelper[4] == selectedObj[0])
             {
-
                 selectedObj[1] = hitHelper[0].transform.gameObject;
                 selectedObj[2] = hitHelper[1].transform.gameObject;
             }
@@ -210,6 +209,10 @@ public class GameManager : MonoBehaviour
                 selectedObj[1] = hitHelper[5].transform.gameObject;
                 selectedObj[2] = hitHelper[0].transform.gameObject;
             }
+            else
+            {
+                isSelected = false;
+            }
 
             OutlineHighlighter();
         }
@@ -220,31 +223,10 @@ public class GameManager : MonoBehaviour
         foreach (var selected in selectedObj)
         {
             //print(selected);
-            selected.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
+            selected.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = true;
         }
         isSelected = true;
     }
-
-    //void SelectWithinRadius(Vector3 center, float radius)
-    //{
-    //    if (isSelected)
-    //    {
-    //        foreach (var hitCollider in temp)
-    //        {
-    //            //print(hitCollider.transform.parent.name + hitCollider.name);
-    //            hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0;
-    //        }
-    //    }
-
-    //    temp = Physics2D.OverlapCircleAll(center, radius);
-
-    //    foreach (var hitCollider in temp)
-    //    {
-    //        //print(hitCollider.transform.parent.name + hitCollider.name);
-    //        hitCollider.GetComponent<Shapes2D.Shape>().settings.outlineSize = 0.03f;
-    //    }
-    //    isSelected = true;
-    //}
 
     void CreateColumn()
     {
@@ -277,7 +259,7 @@ public class GameManager : MonoBehaviour
                     tempObj = Instantiate(hexModel, position, Quaternion.identity);
                     tempObj.name = hexagonName + HexnameCounter;
                     pickColors();
-                    tempObj.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
+                    tempObj.GetComponent<SpriteRenderer>().color = randomColor;
                     tempObj.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
@@ -293,7 +275,7 @@ public class GameManager : MonoBehaviour
                     tempObj = Instantiate(hexModel, position, Quaternion.identity);
                     tempObj.name = hexagonName + HexnameCounter;
                     pickColors();
-                    tempObj.GetComponent<Shapes2D.Shape>().settings.fillColor = randomColor;
+                    tempObj.GetComponent<SpriteRenderer>().color = randomColor;
                     tempObj.transform.parent = GameObject.Find("Column" + ColnameCounter.ToString()).transform;
                     ColnameCounter += 2;
 
@@ -313,9 +295,10 @@ public class GameManager : MonoBehaviour
         //Debug.Log(randomColor.ToString());
     }
 
-    void GetAllHexagons(GameObject gObject)
+    IEnumerator HexRotator()
     {
 
+        yield return new WaitForSeconds(0.1f);
     }
 
 }
