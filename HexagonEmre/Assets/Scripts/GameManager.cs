@@ -278,6 +278,7 @@ public class GameManager : MonoBehaviour
         //Debug.Log(randomColor.ToString());
     }
 
+
     IEnumerator Locationchanger(bool CW)
     {
         Vector2 pos0, pos1, pos2;
@@ -288,6 +289,7 @@ public class GameManager : MonoBehaviour
             selected.transform.GetComponent<Rigidbody2D>().simulated = false;
 
         }
+
         pos0 = selectedObj[0].transform.position;
         pos1 = selectedObj[1].transform.position;
         pos2 = selectedObj[2].transform.position;
@@ -312,31 +314,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void DragDetect(int platform)
-    {
+    //void DragDetect(int platform)
+    //{
 
-        Vector2 afterTouchCoordinates = Input.GetTouch(0).position;
+    //    Vector2 afterTouchCoordinates = Input.GetTouch(0).position;
 
-        if (platform == 1)
-        {
+    //    if (platform == 1)
+    //    {
 
-        }
-        float distX = afterTouchCoordinates.x - touchStartCoordinates.x;
-        float distY = afterTouchCoordinates.y - touchStartCoordinates.y;
+    //    }
+    //    float distX = afterTouchCoordinates.x - touchStartCoordinates.x;
+    //    float distY = afterTouchCoordinates.y - touchStartCoordinates.y;
 
-        //dokunma başlangıç ve bitiş koordinatları üzerinden rotasyon tetiklenmesini kontrol eder.
-        if (distX > 0 || distY > 0)
-        {
-            Locationchanger(true);
+    //    //dokunma başlangıç ve bitiş koordinatları üzerinden rotasyon tetiklenmesini kontrol eder.
+    //    if (distX > 0 || distY > 0)
+    //    {
+    //        Locationchanger(true);
 
-        }
-        else
-        {
-            Locationchanger(false);
-        }
-        theTouch = Input.GetTouch(0);
-        //phaseDisplayText.text = distX.ToString() + distY.ToString();
+    //    }
+    //    else
+    //    {
+    //        Locationchanger(false);
+    //    }
+    //    theTouch = Input.GetTouch(0);
+    //    //phaseDisplayText.text = distX.ToString() + distY.ToString();
 
-    }
+    //}
 
 }
